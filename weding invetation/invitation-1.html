@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>دعوة زفاف - أمير وإيمان</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Tajawal:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --deep:#0b2a20;
+    --deep2:#0f3a2b;
+    --mid:#1f5c43;
+    --gold:#c9a66b;
+    --gold-soft:#e3cd9a;
+    --cream:#f4ecd8;
+    --text-dark:#1c2b22;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{
+    height:100%;
+    background:var(--deep);
+    font-family:'Tajawal', sans-serif;
+    overflow:hidden;
+    color:var(--cream);
+  }
+  body{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+
+  /* background texture */
+  .bg-wrap{
+    position:fixed; inset:0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(201,166,107,0.08), transparent 55%),
+      radial-gradient(ellipse at 80% 80%, rgba(31,92,67,0.35), transparent 55%),
+      linear-gradient(160deg, var(--deep) 0%, var(--deep2) 55%, #081f18 100%);
+    z-index:0;
+  }
+  .leaf-pattern{
+    position:fixed; inset:0; z-index:0; opacity:.10; pointer-events:none;
+  }
+
+  /* mouse glow - layered green/gold aura, more prominent than a plain soft circle */
+  #cursor-glow{
+    position:fixed; width:420px; height:420px; border-radius:50%;
+    pointer-events:none; z-index:1;
+    background:
+      radial-gradient(circle, rgba(227,205,154,0.22) 0%, transparent 34%),
+      radial-gradient(circle, rgba(201,166,107,0.14) 0%, transparent 45%),
+      radial-gradient(circle, rgba(47,122,82,0.22) 0%, transparent 62%);
+    transform:translate(-50%,-50%);
+    transition:opacity .3s ease;
+    will-change:transform;
+  }
+  #cursor-ring{
+    position:fixed; width:26px; height:26px; border-radius:50%;
+    pointer-events:none; z-index:6;
+    border:1.5px solid rgba(227,205,154,0.85);
+    box-shadow:0 0 12px 2px rgba(201,166,107,0.5);
+    transform:translate(-50%,-50%);
+    will-change:transform;
+    transition:width .25s ease, height .25s ease;
+  }
+
+  #sparkle-layer{
+    position:fixed; inset:0; pointer-events:none; z-index:5;
+  }
+  /* cursor leaf trail - replaces plain dot sparkles, more noticeable */
+  .cursor-leaf{
+    position:fixed;
+    pointer-events:none;
+    will-change:transform, opacity;
+    animation:cursorLeafFade 1s ease-out forwards;
+    filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));
+  }
+  @keyframes cursorLeafFade{
+    0%{opacity:1; transform:translate(-50%,-50%) scale(1) rotate(var(--r0));}
+    100%{opacity:0; transform:translate(-50%,-50%) scale(.35) rotate(var(--r1)) translateY(38px);}
+  }
+
+  /* falling leaves rain layer */
+  #leaf-fall-layer{
+    position:fixed; inset:0; pointer-events:none; z-index:4; overflow:hidden;
+  }
+  .falling-leaf{
+    position:absolute; top:-40px;
+    will-change:transform, opacity;
+    animation-name:leafFall;
+    animation-timing-function:ease-in-out;
+    animation-fill-mode:forwards;
+  }
+  @keyframes leafFall{
+    0%{   transform:translate(0,0) rotate(0deg);   opacity:0;}
+    6%{   opacity:.9;}
+    25%{  transform:translate(var(--sway1), 25vh) rotate(90deg);}
+    50%{  transform:translate(var(--sway2), 55vh) rotate(190deg);}
+    75%{  transform:translate(var(--sway1), 85vh) rotate(300deg);}
+    94%{  opacity:.85;}
+    100%{ transform:translate(0, 112vh) rotate(400deg); opacity:0;}
+  }
+
+  .stage{
+    position:relative; z-index:3;
+    width:100%; height:100vh;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  /* ---------- ENVELOPE ---------- */
+  #envelope-scene{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:22px;
+    transition:opacity .7s ease, transform .7s ease;
+  }
+  #envelope-scene.hidden{
+    opacity:0; transform:scale(.92);
+    pointer-events:none;
+  }
+  .invite-hint{
+    font-family:'Tajawal', sans-serif;
+    font-weight:300;
+    letter-spacing:.5px;
+    color:var(--gold-soft);
+    font-size:14px;
+    opacity:.85;
+  }
+  .envelope{
+    position:relative;
+    width:min(78vw, 320px);
+    height:min(56vw, 210px);
+    cursor:pointer;
+    perspective:1200px;
+  }
+  .env-body{
+    position:absolute; inset:0;
+    background:linear-gradient(155deg, #14493a, #0d3327);
+    border:1px solid rgba(201,166,107,0.5);
+    border-radius:6px;
+    box-shadow:0 20px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(201,166,107,0.08) inset;
+    overflow:hidden;
+  }
+  .env-body::before{
+    content:"";
+    position:absolute; inset:10px;
+    border:1px solid rgba(201,166,107,0.35);
+    border-radius:2px;
+  }
+  .env-flap{
+    position:absolute; top:0; left:0; width:100%; height:58%;
+    background:linear-gradient(160deg, #1c5c47, #123c2f);
+    clip-path:polygon(0 0, 100% 0, 50% 100%);
+    transform-origin:top center;
+    transform-style:preserve-3d;
+    transition:transform .8s cubic-bezier(.68,-0.2,.27,1.15);
+    z-index:4;
+    border-bottom:1px solid rgba(201,166,107,0.4);
+  }
+  .envelope.open .env-flap{
+    transform:rotateX(180deg);
+  }
+  .env-seal{
+    position:absolute; top:38%; left:50%;
+    width:56px; height:56px;
+    transform:translate(-50%,-50%);
+    border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--gold-soft), var(--gold) 60%, #8a6d3b 100%);
+    box-shadow:0 4px 14px rgba(0,0,0,.5);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Aref Ruqaa', serif;
+    font-size:22px; color:#3a2c12;
+    z-index:5;
+    transition:transform .5s ease, opacity .5s ease;
+  }
+  .envelope.open .env-seal{
+    transform:translate(-50%,-50%) scale(0);
+    opacity:0;
+  }
+  .env-letter{
+    position:absolute; left:8%; right:8%; bottom:6%;
+    height:70%;
+    background:var(--cream);
+    border-radius:3px;
+    box-shadow:0 -4px 18px rgba(0,0,0,.25);
+    z-index:2;
+    transition:transform .9s cubic-bezier(.22,1,.36,1), opacity .6s ease;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .env-letter span{
+    font-family:'Aref Ruqaa', serif;
+    color:var(--mid);
+    font-size:15px;
+    opacity:.75;
+  }
+  .envelope.open .env-letter{
+    transform:translateY(-230px) scale(1.03);
+  }
+
+  /* ---------- INVITATION CARD ---------- */
+  #card-scene{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    padding:24px 16px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .8s ease .25s;
+    overflow-y:auto;
+  }
+  #card-scene.visible{
+    opacity:1;
+    pointer-events:auto;
+  }
+  .card{
+    width:100%;
+    max-width:420px;
+    background:linear-gradient(180deg, var(--cream), #ece2c6);
+    border-radius:10px;
+    padding:40px 30px 34px;
+    text-align:center;
+    color:var(--text-dark);
+    position:relative;
+    box-shadow:0 30px 80px rgba(0,0,0,.5);
+    border:1px solid rgba(201,166,107,0.6);
+    animation:cardRise .9s cubic-bezier(.22,1,.36,1);
+    margin:auto;
+  }
+  @keyframes cardRise{
+    from{opacity:0; transform:translateY(40px) scale(.96);}
+    to{opacity:1; transform:translateY(0) scale(1);}
+  }
+  .card::before, .card::after{
+    content:"";
+    position:absolute; width:26px; height:26px;
+    border:1.5px solid var(--gold);
+  }
+  .card::before{ top:10px; right:10px; border-left:none; border-bottom:none;}
+  .card::after{ bottom:10px; left:10px; border-right:none; border-top:none;}
+
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:3px;
+    color:var(--mid);
+    font-weight:500;
+  }
+  .verse{
+    font-family:'Aref Ruqaa', serif;
+    font-size:15px;
+    color:#4b5c46;
+    margin-top:14px;
+    line-height:2;
+  }
+  .names{
+    margin-top:22px;
+    font-family:'Aref Ruqaa', serif;
+    font-size:40px;
+    line-height:1.5;
+    color:var(--deep2);
+  }
+  .amp{
+    display:block;
+    font-size:22px;
+    color:var(--gold);
+    margin:2px 0;
+  }
+  .divider{
+    width:70px; height:2px;
+    background:var(--gold);
+    margin:20px auto;
+    position:relative;
+  }
+  .divider::before{
+    content:"❦";
+    position:absolute; top:50%; left:50%;
+    transform:translate(-50%,-50%);
+    background:var(--cream);
+    padding:0 8px;
+    color:var(--gold);
+    font-size:16px;
+  }
+  .invite-text{
+    font-size:15px;
+    line-height:2;
+    color:#3c4a3a;
+  }
+  .details{
+    margin-top:26px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .detail-row{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    font-size:15px;
+    font-weight:500;
+    color:var(--deep2);
+  }
+  .detail-row .ic{
+    width:22px; height:22px;
+    flex:none;
+    color:var(--gold);
+  }
+
+  .map-btn{
+    margin-top:20px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:12px 26px;
+    background:var(--mid);
+    color:var(--cream);
+    text-decoration:none;
+    border-radius:30px;
+    font-size:14px;
+    font-weight:500;
+    letter-spacing:.3px;
+    box-shadow:0 8px 20px rgba(31,92,67,.35);
+    transition:transform .25s ease, box-shadow .25s ease, background .25s ease;
+  }
+  .map-btn:hover{
+    transform:translateY(-2px);
+    background:#256c4f;
+    box-shadow:0 12px 26px rgba(31,92,67,.45);
+  }
+
+  /* countdown */
+  .countdown{
+    margin-top:28px;
+    padding-top:22px;
+    border-top:1px dashed rgba(201,166,107,0.6);
+  }
+  .countdown-label{
+    font-size:12px;
+    letter-spacing:2px;
+    color:var(--mid);
+    margin-bottom:12px;
+  }
+  .cd-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:8px;
+  }
+  .cd-cell{
+    background:var(--deep2);
+    color:var(--cream);
+    border-radius:8px;
+    padding:10px 4px;
+  }
+  .cd-num{
+    font-size:22px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+    color:var(--gold-soft);
+  }
+  .cd-unit{
+    font-size:10px;
+    opacity:.75;
+    margin-top:2px;
+  }
+
+  .footer-note{
+    margin-top:24px;
+    font-size:12px;
+    color:#6b7a67;
+    letter-spacing:.5px;
+  }
+
+  /* decorative green ornaments */
+  .ornament-top, .ornament-bottom{
+    display:flex; justify-content:center;
+    color:#2f7a52;
+    opacity:.85;
+  }
+  .ornament-top{ margin-bottom:10px; }
+  .ornament-bottom{ margin-top:22px; }
+  .ornament-top svg, .ornament-bottom svg{ width:150px; height:26px; }
+
+  .amp-leaf{
+    display:inline-flex;
+    vertical-align:middle;
+    margin:0 6px;
+    color:#2f7a52;
+  }
+  .amp-leaf svg{ width:16px; height:16px; }
+
+  @media (max-width:380px){
+    .names{font-size:32px;}
+    .card{padding:32px 20px 28px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-wrap"></div>
+<svg class="leaf-pattern" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
+  <defs>
+    <pattern id="leaves" width="120" height="120" patternUnits="userSpaceOnUse">
+      <path d="M60 10 C80 30, 80 60, 60 90 C40 60, 40 30, 60 10 Z" fill="none" stroke="#c9a66b" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="100%" height="100%" fill="url(#leaves)"/>
+</svg>
+<div id="cursor-glow"></div>
+<div id="cursor-ring"></div>
+<div id="sparkle-layer"></div>
+<div id="leaf-fall-layer"></div>
+
+<div class="stage">
+
+  <!-- envelope -->
+  <div id="envelope-scene">
+    <div class="invite-hint">اضغط على الظرف لفتح الدعوة</div>
+    <div class="envelope" id="envelope">
+      <div class="env-body"></div>
+      <div class="env-letter"><span>أمير &amp; إيمان</span></div>
+      <div class="env-flap"></div>
+      <div class="env-seal">أ‌إ</div>
+    </div>
+  </div>
+
+  <!-- invitation card -->
+  <div id="card-scene">
+    <div class="card">
+      <div class="ornament-top">
+        <svg viewBox="0 0 150 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 13 Q40 2 75 13 Q110 2 148 13" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M75 13c-3-6-1-10 4-11-1 5-1 8-4 11z" fill="currentColor"/>
+          <path d="M75 13c3-6 1-10-4-11 1 5 1 8 4 11z" fill="currentColor"/>
+          <circle cx="30" cy="8.5" r="2" fill="currentColor"/>
+          <circle cx="120" cy="8.5" r="2" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="eyebrow">بحمد الله وتوفيقه</div>
+      <div class="verse">
+        وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا<br>
+        لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً
+      </div>
+
+      <div class="names">
+        أميـر
+        <span class="amp">
+          <span class="amp-leaf"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6 4 3 9 3 14c0 5 4 8 9 8s9-3 9-8c0-5-3-10-9-12z" opacity=".9"/></svg></span>
+          &amp;
+          <span class="amp-leaf"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6 4 3 9 3 14c0 5 4 8 9 8s9-3 9-8c0-5-3-10-9-12z" opacity=".9"/></svg></span>
+        </span>
+        إيمـان
+      </div>
+
+      <div class="divider"></div>
+
+      <p class="invite-text">
+        يسعدنا دعوتكم لمشاركتنا أجمل لحظات حياتنا<br>
+        بمناسبة حفل زفافنا
+      </p>
+
+      <div class="details">
+        <div class="detail-row">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+          <span>السبت، 17 أكتوبر 2026</span>
+        </div>
+        <div class="detail-row">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s7-6.2 7-11.5A7 7 0 1 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
+          <span>موعد الاستقبال</span>
+        </div>
+      </div>
+
+      <a class="map-btn" href="https://goo.gl/maps/NvH9toUEbbNaGMf78" target="_blank" rel="noopener">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.2 7-11.5A7 7 0 1 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
+        عرض موقع القاعة
+      </a>
+
+      <div class="countdown">
+        <div class="countdown-label">الوقت المتبقي على الفرح</div>
+        <div class="cd-grid">
+          <div class="cd-cell"><div class="cd-num" id="cd-days">--</div><div class="cd-unit">يوم</div></div>
+          <div class="cd-cell"><div class="cd-num" id="cd-hours">--</div><div class="cd-unit">ساعة</div></div>
+          <div class="cd-cell"><div class="cd-num" id="cd-mins">--</div><div class="cd-unit">دقيقة</div></div>
+          <div class="cd-cell"><div class="cd-num" id="cd-secs">--</div><div class="cd-unit">ثانية</div></div>
+        </div>
+      </div>
+
+      <div class="ornament-bottom">
+        <svg viewBox="0 0 150 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M2 13 Q40 24 75 13 Q110 24 148 13" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M75 13c-3 6-1 10 4 11-1-5-1-8-4-11z" fill="currentColor"/>
+          <path d="M75 13c3 6 1 10-4 11 1-5 1-8 4-11z" fill="currentColor"/>
+          <circle cx="30" cy="17.5" r="2" fill="currentColor"/>
+          <circle cx="120" cy="17.5" r="2" fill="currentColor"/>
+        </svg>
+      </div>
+      <div class="footer-note">بحضوركم تكتمل فرحتنا 💚</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ---- open envelope ----
+  const envelope = document.getElementById('envelope');
+  const envelopeScene = document.getElementById('envelope-scene');
+  const cardScene = document.getElementById('card-scene');
+
+  const leafFallLayer = document.getElementById('leaf-fall-layer');
+  let ambientRainTimer = null;
+
+  const LEAF_PATH = 'M12 2C6 4 3 9 3 14c0 5 4 8 9 8s9-3 9-8c0-5-3-10-9-12z';
+  const LEAF_COLORS = ['#2f7a52', '#3f8f5f', '#c9a66b', '#1f5c43'];
+
+  function makeLeafSVG(color, opacity){
+    return `<svg viewBox="0 0 24 24" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      <path d="${LEAF_PATH}" fill="${color}" opacity="${opacity}"/>
+      <path d="M12 6v14" stroke="rgba(0,0,0,.18)" stroke-width="1"/>
+    </svg>`;
+  }
+
+  function spawnFallingLeaf(){
+    const leaf = document.createElement('div');
+    leaf.className = 'falling-leaf';
+    const size = 14 + Math.random()*16;
+    const startX = Math.random()*window.innerWidth;
+    const duration = 7 + Math.random()*6;
+    const sway1 = (Math.random()*90 - 45) + 'px';
+    const sway2 = (Math.random()*90 - 45) + 'px';
+    const color = LEAF_COLORS[Math.floor(Math.random()*LEAF_COLORS.length)];
+    leaf.style.left = startX + 'px';
+    leaf.style.width = size + 'px';
+    leaf.style.height = size + 'px';
+    leaf.style.setProperty('--sway1', sway1);
+    leaf.style.setProperty('--sway2', sway2);
+    leaf.style.animationDuration = duration + 's';
+    leaf.innerHTML = makeLeafSVG(color, .9);
+    leafFallLayer.appendChild(leaf);
+    setTimeout(() => leaf.remove(), duration*1000 + 200);
+  }
+
+  function leafBurst(count){
+    for(let i=0;i<count;i++){
+      setTimeout(() => spawnFallingLeaf(), i*70);
+    }
+  }
+
+  function startAmbientRain(){
+    if(ambientRainTimer) return;
+    ambientRainTimer = setInterval(spawnFallingLeaf, 650);
+  }
+
+  envelope.addEventListener('click', () => {
+    if (envelope.classList.contains('open')) return;
+    envelope.classList.add('open');
+    setTimeout(() => {
+      envelopeScene.classList.add('hidden');
+      cardScene.classList.add('visible');
+      leafBurst(26);           // strong burst of falling leaves as the invitation appears
+      startAmbientRain();      // gentle continuous leaf-fall afterwards
+    }, 650);
+  });
+
+  // ---- cursor glow + ring ----
+  const glow = document.getElementById('cursor-glow');
+  const ring = document.getElementById('cursor-ring');
+  function moveCursorFX(x, y){
+    glow.style.transform = `translate(${x}px, ${y}px) translate(-50%,-50%)`;
+    ring.style.transform = `translate(${x}px, ${y}px) translate(-50%,-50%)`;
+  }
+  window.addEventListener('mousemove', (e) => moveCursorFX(e.clientX, e.clientY));
+  window.addEventListener('touchmove', (e) => {
+    const t = e.touches[0];
+    if(!t) return;
+    moveCursorFX(t.clientX, t.clientY);
+  }, {passive:true});
+  window.addEventListener('mousedown', () => { ring.style.width='40px'; ring.style.height='40px'; });
+  window.addEventListener('mouseup', () => { ring.style.width='26px'; ring.style.height='26px'; });
+
+  // ---- leaf trail on mouse move (distinct from the falling-leaf rain) ----
+  const sparkleLayer = document.getElementById('sparkle-layer');
+  let lastTrail = 0;
+  function spawnCursorLeaf(x, y){
+    const now = Date.now();
+    if(now - lastTrail < 55) return;
+    lastTrail = now;
+    const leaf = document.createElement('div');
+    leaf.className = 'cursor-leaf';
+    const size = 10 + Math.random()*8;
+    const r0 = Math.floor(Math.random()*40 - 20);
+    const r1 = r0 + (Math.random()>0.5 ? 160 : -160);
+    leaf.style.left = (x + (Math.random()*20-10)) + 'px';
+    leaf.style.top = (y + (Math.random()*20-10)) + 'px';
+    leaf.style.width = size + 'px';
+    leaf.style.height = size + 'px';
+    leaf.style.setProperty('--r0', r0+'deg');
+    leaf.style.setProperty('--r1', r1+'deg');
+    const color = LEAF_COLORS[Math.floor(Math.random()*LEAF_COLORS.length)];
+    leaf.innerHTML = makeLeafSVG(color, 1);
+    sparkleLayer.appendChild(leaf);
+    setTimeout(() => leaf.remove(), 1050);
+  }
+  window.addEventListener('mousemove', (e) => spawnCursorLeaf(e.clientX, e.clientY));
+
+  // ---- countdown (always recalculated live from current date/time) ----
+  const target = new Date('2026-10-17T00:00:00+02:00').getTime();
+  function updateCountdown(){
+    const now = Date.now();
+    let diff = target - now;
+    if(diff < 0) diff = 0;
+    const d = Math.floor(diff / (1000*60*60*24));
+    const h = Math.floor((diff / (1000*60*60)) % 24);
+    const m = Math.floor((diff / (1000*60)) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+    document.getElementById('cd-days').textContent = d;
+    document.getElementById('cd-hours').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-mins').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-secs').textContent = String(s).padStart(2,'0');
+  }
+  updateCountdown();
+  setInterval(updateCountdown, 1000);
+</script>
+
+</body>
+</html>
