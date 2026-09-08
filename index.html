@@ -16,6 +16,8 @@
     --gold-soft:#e3cd9a;
     --cream:#f4ecd8;
     --text-dark:#1c2b22;
+    --env-white:#ffffff;
+    --env-white2:#f7f4ec;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{
@@ -119,7 +121,7 @@
     transition:opacity .7s ease, transform .7s ease;
   }
   #envelope-scene.hidden{
-    opacity:0; transform:scale(.92);
+    opacity:0; transform:scale(1.35);
     pointer-events:none;
   }
   .invite-hint{
@@ -136,30 +138,95 @@
     height:min(56vw, 210px);
     cursor:pointer;
     perspective:1200px;
+    animation:envelopeFloat 3.2s ease-in-out infinite;
+    transition:transform .25s ease;
   }
+  .envelope:hover{
+    transform:translateY(-4px) scale(1.015);
+  }
+  .envelope:active{
+    transform:translateY(0) scale(.97);
+  }
+  .envelope.open{
+    animation:none;
+  }
+  @keyframes envelopeFloat{
+    0%,100%{ transform:translateY(0); }
+    50%{ transform:translateY(-8px); }
+  }
+  /* soft contact shadow resting under the envelope — squashed ellipse, tinted with the envelope's own dark green */
+  .env-shadow{
+    position:absolute;
+    left:4%; right:4%;
+    bottom:-20px;
+    height:64%;
+    border-radius:50%;
+    background:#081a13;
+    filter:blur(14px);
+    transform:scaleY(.22);
+    opacity:.65;
+    z-index:0;
+    animation:shadowBreathe 3.2s ease-in-out infinite;
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  @keyframes shadowBreathe{
+    0%,100%{ transform:scaleY(.22) scaleX(1); opacity:.65; }
+    50%{ transform:scaleY(.18) scaleX(.86); opacity:.4; }
+  }
+  .envelope.open .env-shadow{
+    animation:none;
+    opacity:.35;
+    transform:scaleY(.2) scaleX(.9);
+  }
+  /* envelope body - olive/green exterior */
   .env-body{
     position:absolute; inset:0;
-    background:linear-gradient(155deg, #14493a, #0d3327);
-    border:1px solid rgba(201,166,107,0.5);
-    border-radius:6px;
-    box-shadow:0 20px 60px rgba(0,0,0,.55), 0 0 0 1px rgba(201,166,107,0.08) inset;
+    background:
+      linear-gradient(120deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.05) 20%, transparent 34%, transparent 66%, rgba(0,0,0,.14) 100%),
+      #0e3025;
+    border:1.5px solid rgba(201,166,107,0.55);
+    border-radius:8px;
+    box-shadow:
+      0 2px 4px rgba(0,0,0,.35),
+      0 14px 28px rgba(0,0,0,.4),
+      0 30px 55px rgba(0,0,0,.35),
+      0 0 0 1px rgba(201,166,107,0.08) inset,
+      0 1px 0 rgba(255,255,255,.05) inset;
     overflow:hidden;
+    z-index:1;
   }
   .env-body::before{
     content:"";
-    position:absolute; inset:10px;
-    border:1px solid rgba(201,166,107,0.35);
-    border-radius:2px;
+    position:absolute; inset:7px;
+    border:1px solid rgba(201,166,107,0.3);
+    border-radius:3px;
+    pointer-events:none;
+  }
+  /* envelope flap - identical flat colour to the body, no gloss overlay, so it reads as one seamless piece */
+  /* static soft shadow behind the flap - does NOT rotate with it, so it renders cleanly with no 3D artifacts */
+  .env-flap-shadow{
+    position:absolute; top:0; left:0; width:100%; height:58%;
+    clip-path:polygon(0 0, 100% 0, 50% 100%);
+    background:linear-gradient(to bottom, rgba(0,0,0,.55) 0%, rgba(0,0,0,.3) 45%, transparent 85%);
+    filter:blur(9px);
+    transform:translateY(6px) scale(1.04);
+    z-index:3;
+    pointer-events:none;
+    transition:opacity .5s ease;
+  }
+  .envelope.open .env-flap-shadow{
+    opacity:0;
   }
   .env-flap{
     position:absolute; top:0; left:0; width:100%; height:58%;
-    background:linear-gradient(160deg, #1c5c47, #123c2f);
+    background:
+      linear-gradient(120deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.05) 20%, transparent 34%, transparent 66%, rgba(0,0,0,.14) 100%),
+      #0e3025;
     clip-path:polygon(0 0, 100% 0, 50% 100%);
     transform-origin:top center;
     transform-style:preserve-3d;
     transition:transform .8s cubic-bezier(.68,-0.2,.27,1.15);
     z-index:4;
-    border-bottom:1px solid rgba(201,166,107,0.4);
   }
   .envelope.open .env-flap{
     transform:rotateX(180deg);
@@ -169,8 +236,11 @@
     width:56px; height:56px;
     transform:translate(-50%,-50%);
     border-radius:50%;
-    background:radial-gradient(circle at 35% 30%, var(--gold-soft), var(--gold) 60%, #8a6d3b 100%);
-    box-shadow:0 4px 14px rgba(0,0,0,.5);
+    background:radial-gradient(circle at 32% 28%, var(--gold-soft), var(--gold) 55%, #8a6d3b 100%);
+    box-shadow:
+      0 5px 14px rgba(0,0,0,.55),
+      0 1px 0 rgba(255,255,255,.35) inset,
+      0 -3px 6px rgba(0,0,0,.35) inset;
     display:flex; align-items:center; justify-content:center;
     font-family:'Aref Ruqaa', serif;
     font-size:22px; color:#3a2c12;
@@ -184,21 +254,30 @@
   .env-letter{
     position:absolute; left:8%; right:8%; bottom:6%;
     height:70%;
-    background:var(--cream);
+    background:
+      linear-gradient(120deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,.05) 20%, transparent 34%, transparent 66%, rgba(0,0,0,.14) 100%),
+      #0e3025;
     border-radius:3px;
-    box-shadow:0 -4px 18px rgba(0,0,0,.25);
     z-index:2;
-    transition:transform .9s cubic-bezier(.22,1,.36,1), opacity .6s ease;
+    transition:transform .9s cubic-bezier(.22,1,.36,1), opacity .6s ease, background .3s ease;
     display:flex; align-items:center; justify-content:center;
   }
   .env-letter span{
     font-family:'Aref Ruqaa', serif;
     color:var(--mid);
     font-size:15px;
-    opacity:.75;
+    opacity:0;
+    transition:opacity .4s ease .3s;
   }
-  .envelope.open .env-letter{
-    transform:translateY(-230px) scale(1.03);
+  /* letter now rises only once the flap has fully opened (see JS: 'letter-rise' class added after a delay) */
+  .envelope.letter-rise .env-letter{
+    transform:translateY(-238px) rotate(-1.5deg) scale(1.05);
+    background:var(--env-white);
+    z-index:6;
+  }
+  /* the name only fades in once the letter starts rising out of the envelope, never visible before that */
+  .envelope.letter-rise .env-letter span{
+    opacity:.75;
   }
 
   /* ---------- INVITATION CARD ---------- */
@@ -412,14 +491,19 @@
 <div id="sparkle-layer"></div>
 <div id="leaf-fall-layer"></div>
 
+
+<audio id="bg-music" src="Mahmoud El Esseily - Farha  2017  محمود العسيلي - فرحة (mp3cut.net).mp3" loop preload="auto"></audio>
+
 <div class="stage">
 
   <!-- envelope -->
   <div id="envelope-scene">
     <div class="invite-hint">اضغط على الظرف لفتح الدعوة</div>
     <div class="envelope" id="envelope">
+      <div class="env-shadow"></div>
       <div class="env-body"></div>
       <div class="env-letter"><span>أمير &amp; إيمان</span></div>
+      <div class="env-flap-shadow"></div>
       <div class="env-flap"></div>
       <div class="env-seal">أ‌إ</div>
     </div>
@@ -466,8 +550,12 @@
           <span>السبت، 17 أكتوبر 2026</span>
         </div>
         <div class="detail-row">
+          <span>موعد الاستقبال 7 مساءً</span>
+        </div>
+
+        <div class="detail-row">
           <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 21s7-6.2 7-11.5A7 7 0 1 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.3"/></svg>
-          <span>موعد الاستقبال</span>
+          <span> قاعه ستار جاردن - دار المشاه</span>
         </div>
       </div>
 
@@ -502,7 +590,7 @@
 </div>
 
 <script>
-  // ---- open envelope ----
+  // ---- open envelope (staged: flap opens first, then the letter rises, then the invitation card appears) ----
   const envelope = document.getElementById('envelope');
   const envelopeScene = document.getElementById('envelope-scene');
   const cardScene = document.getElementById('card-scene');
@@ -551,15 +639,36 @@
     ambientRainTimer = setInterval(spawnFallingLeaf, 650);
   }
 
+  // ---- music ----
+  const bgMusic = document.getElementById('bg-music');
+
+  function playMusic(){
+    bgMusic.volume = 0.6;
+    bgMusic.play().catch(() => {
+      // لو المتصفح منع التشغيل التلقائي، الأغنية هتشتغل أول ما المستخدم يضغط في أي حتة تانية بالصفحة
+      document.addEventListener('click', () => bgMusic.play().catch(()=>{}), { once:true });
+    });
+  }
+
   envelope.addEventListener('click', () => {
     if (envelope.classList.contains('open')) return;
+
+    // 1) الظرف يفتح أولاً (الغطاء يدور للخلف ويختفي الختم)
     envelope.classList.add('open');
+
+    // 2) بعد ما الظرف يخلص فتحه، البطاقة جوه الظرف تطلع لفوق
     setTimeout(() => {
-      envelopeScene.classList.add('hidden');
-      cardScene.classList.add('visible');
-      leafBurst(26);           // strong burst of falling leaves as the invitation appears
-      startAmbientRain();      // gentle continuous leaf-fall afterwards
-    }, 650);
+      envelope.classList.add('letter-rise');
+
+      // 3) بعد ما البطاقة تطلع بره الظرف، تظهر الدعوة كاملة + الموسيقى + المطر الورقي
+      setTimeout(() => {
+        envelopeScene.classList.add('hidden');
+        cardScene.classList.add('visible');
+        leafBurst(26);           // دفعة قوية من الأوراق المتساقطة لحظة ظهور الدعوة
+        startAmbientRain();      // تساقط أوراق خفيف مستمر بعد كده
+        playMusic();             // تشغيل الأغنية
+      }, 900); // مدة صعود البطاقة
+    }, 800); // مدة فتح غطاء الظرف
   });
 
   // ---- cursor glow + ring ----
